@@ -40,7 +40,7 @@ class MQNotificationExtension extends Extension implements PrependExtensionInter
         $config = $this->processConfiguration(new Configuration(), $configs);
 
         $exchangeOptions = ['name' => $config['exchange_name'], 'type' => 'fanout'];
-        $config = [
+        $extensionConfig = [
             'producers' => [
                 'notify' => [
                     'connection' => $config['mq_connection_name'],
@@ -57,6 +57,14 @@ class MQNotificationExtension extends Extension implements PrependExtensionInter
                 ],
             ],
         ];
-        $container->prependExtensionConfig('old_sound_rabbit_mq', $config);
+
+        if (isset($config['graceful_max_execution_timeout']) && is_numeric($config['graceful_max_execution_timeout'])) {
+            $extensionConfig['consumers']['notification']['graceful_max_execution']['timeout'] = (int) $config['graceful_max_execution_timeout'];
+        }
+        if (isset($config['graceful_max_execution_exit_code']) && is_numeric($config['graceful_max_execution_exit_code'])) {
+            $extensionConfig['consumers']['notification']['graceful_max_execution']['exit_code'] = (int) $config['graceful_max_execution_exit_code'];
+        }
+
+        $container->prependExtensionConfig('old_sound_rabbit_mq', $extensionConfig);
     }
 }
